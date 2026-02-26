@@ -1,0 +1,3 @@
+Project Overview
+This project demonstrates the deployment of a highly available web server architecture within a Kubernetes cluster.
+It focuses on the transition from a standard deployment to a production-hardened environment, implementing traffic routing, resource governance, and security-first network policies
