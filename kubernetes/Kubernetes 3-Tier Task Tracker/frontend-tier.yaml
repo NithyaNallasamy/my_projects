@@ -1,0 +1,57 @@
+# frontend-tier.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-ui
+spec:
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: ui-container
+        image: my-frontend:v1
+        imagePullPolicy: Never  # <--- Add this! This tells K8s to look locally.
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+spec:
+  selector:
+    app: frontend
+  ports:
+    - port: 80
+      targetPort: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: main-ingress
+  annotations:
+    # This magic line strips "/api" so your Flask app sees "/" or "/tasks"
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /api/?(.*) # This regex captures everything after /api
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: backend-service
+            port:
+              number: 8080
+      - path: /?(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: frontend-service
+            port:
+              number: 80
